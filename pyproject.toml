@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "tryingoutswarm"
+version = "0.1.0"
+description = ""
+authors = ["satyamdas03 <116027621+satyamdas03@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+firecrawl = "^1.4.0"
+Swarm = "^0.0.2"
+python-dotenv = "^1.0.1"
+openai = "^1.52.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

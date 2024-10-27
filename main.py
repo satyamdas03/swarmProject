@@ -11,6 +11,7 @@ dotenv.load_dotenv()
 app = FirecrawlApp(api_key=os.getenv("FIRECRAWL_API_KEY"))
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+#FUNCTIONS
 def scrape_website(url):
     """Scrape a website using Firecrawl."""
     scrape_status = app.scrape_url(
@@ -57,6 +58,25 @@ def create_campaign_idea(target_audience, goals):
     )
     return {"campaign_idea": campaign_idea}
 
+#referencing change
+def reference_other_websites(industry):
+    """Provide examples of websites with successful marketing strategies in the same industry."""
+    reference = generate_completion(
+        "research analyst",
+        "Provide examples of successful marketing strategies in the following industry.",
+        industry
+    )
+    return {"references": reference}
+
+def follow_up_questions():
+    """Prompt the user for any follow-up questions."""
+    return generate_completion(
+        "user interface",
+        "Ask the user if they have any follow-up questions or specific areas they need more guidance on, such as fundraising or promotional strategies.",
+        ""
+    )
+
+#HANDOFFS
 def handoff_to_copywriter():
     """Hand off the campaign idea to the copywriter agent."""
     return copywriter_agent
@@ -73,10 +93,14 @@ def handoff_to_website_scraper():
     """Hand off the url to the website scraper agent."""
     return website_scraper_agent
 
+def handoff_to_reference_agent():
+    return reference_agent
+
+#DEFINING AGENTS
 user_interface_agent = Agent(
     name="User Interface Agent",
     instructions="You are a user interface agent that handles all interactions with the user. You need to always start with a URL that the user wants to create a marketing strategy for. Ask clarification questions if needed. Be concise.",
-    functions=[handoff_to_website_scraper],
+    functions=[handoff_to_website_scraper, follow_up_questions],
 )
 
 website_scraper_agent = Agent(
@@ -88,7 +112,7 @@ website_scraper_agent = Agent(
 analyst_agent = Agent(
     name="Analyst Agent",
     instructions="You are an analyst agent that examines website content and provides insights for marketing strategies. Be concise.",
-    functions=[analyze_website_content, handoff_to_campaign_idea],
+    functions=[analyze_website_content, handoff_to_campaign_idea, handoff_to_reference_agent],
 )
 
 campaign_idea_agent = Agent(
@@ -102,6 +126,14 @@ copywriter_agent = Agent(
     instructions="You are a copywriter agent specialized in creating compelling marketing copy based on website content and campaign ideas. Be concise.",
     functions=[generate_copy],
 )
+
+reference_agent = Agent(
+    name="Reference Agent",
+    instructions="You provide examples of websites with effective marketing strategies in the same industry to help improve the target website.",
+    functions=[reference_other_websites],
+)
+
+# analyst_agent.functions.append(handoff_to_reference_agent)
 
 if __name__ == "__main__":
     # Run the demo loop with the user interface agent
